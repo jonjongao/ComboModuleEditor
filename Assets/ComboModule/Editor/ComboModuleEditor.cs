@@ -113,6 +113,7 @@ public class ComboModuleEditor : GearsPropertyEditor
             }
         }
 
+        //Draw ability slot
         if (abilitiesList.Count > 0)
         {
             for (int i = 0; i < abilitiesList.Count; i++)
@@ -155,6 +156,16 @@ public class ComboModuleEditor : GearsPropertyEditor
 
                     _combo.FindPropertyRelative("abilityName").stringValue = _abilityNames[_selectedAbility];
                 };
+
+                abilitiesList[i].onAddDropdownCallback = (Rect rect, ReorderableList list) =>
+                {
+                    GenericMenu menu = new GenericMenu();
+                    menu.AddItem(new GUIContent("New Chain"), false, CreateNewComboChain, list);
+                    menu.AddSeparator("");
+                    menu.AddItem(new GUIContent("Conditional Chain"), false, CreateConditionalComboChain, list);
+                    menu.ShowAsContext();
+                };
+
                 abilitiesList[i].DoLayoutList();
             }
             EditorUtility.SetDirty(me);
@@ -206,7 +217,17 @@ public class ComboModuleEditor : GearsPropertyEditor
         //DrawDefaultInspector();
     }
 
+    void CreateNewComboChain(object obj)
+    {
+        ReorderableList l = (ReorderableList)obj;
+        l.serializedProperty.InsertArrayElementAtIndex(l.serializedProperty.arraySize);
+        serializedObject.ApplyModifiedProperties();
+    }
 
+    void CreateConditionalComboChain(object obj)
+    {
+
+    }
 
     void OnSceneGUI()
     {

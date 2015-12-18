@@ -16,12 +16,21 @@ public class DemoDriver : MonoBehaviour
 
     void Update()
     {
-        cm.SetActivator(Input.GetMouseButton(0));
+        //cm.SetActivator(Input.GetMouseButton(0));
         Time.timeScale = timeScale;
 
         if (Input.GetKeyDown(KeyCode.Space))
         {
             cm.SetStagger(3f);
+        }
+
+        if (Input.GetMouseButton(0))
+        {
+            cm.SetActivator(true,0);
+        }
+        else if (Input.GetMouseButton(1))
+        {
+            cm.SetActivator(true,1);
         }
 
         axis = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));

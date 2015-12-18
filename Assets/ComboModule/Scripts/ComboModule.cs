@@ -42,6 +42,7 @@ public class ComboModule : MonoBehaviour
     public float stateTime;
 
     public float chainTime;
+    public int defaultCombo = 0;
     public int ctrlIndex = 0;
     public int lastLayer = 0;
     public int LastLayer { get { return lastLayer; } }
@@ -115,22 +116,41 @@ public class ComboModule : MonoBehaviour
     {
     }
 
-    public void SetActivator(bool key)
+    /// <summary>
+    /// If activator is true, automatically play combo chain of current control index.
+    /// </summary>
+    public void SetActivator(bool input)
     {
-        if (key)
+        SetActivator(input, ctrlIndex);
+    }
+
+    public void SetActivator(bool input, int index)
+    {
+        if (input)
         {
-            if (comboState == (ComboState)0)
+            if (index != ctrlIndex)
             {
-                PlayCombo();
-            }
-            else if (comboState == (ComboState)2)
-            {
-                if (AddChain())
-                    PlayCombo();
-                else
+                if(comboState == ComboState.Idle || comboState == ComboState.Linkable)
                 {
-                    if (SetChain(0))
+                    ctrlIndex = index;
+                    PlayCombo();
+                }
+            }
+            else
+            {
+                if (comboState == ComboState.Idle)
+                {
+                    PlayCombo();
+                }
+                else if (comboState == ComboState.Linkable)
+                {
+                    if (AddChain())
                         PlayCombo();
+                    else
+                    {
+                        if (SetChain(0))
+                            PlayCombo();
+                    }
                 }
             }
         }
@@ -173,11 +193,11 @@ public class ComboModule : MonoBehaviour
 
     void ComboStateMachine()
     {
-        if (comboState == (ComboState)0)
+        if (comboState == ComboState.Idle)
         {
 
         }
-        else if (comboState == (ComboState)1)
+        else if (comboState == ComboState.Processing)
         {
             stateTime = CurrentStateTime();
             HitEventMachine(stateTime);
@@ -186,7 +206,7 @@ public class ComboModule : MonoBehaviour
                 comboState = (ComboState)2;
             }
         }
-        else if (comboState == (ComboState)2)
+        else if (comboState == ComboState.Linkable)
         {
             stateTime = CurrentStateTime();
             HitEventMachine(stateTime);
@@ -209,7 +229,7 @@ public class ComboModule : MonoBehaviour
                 comboState = (ComboState)3;
             }
         }
-        else if (comboState == (ComboState)3)
+        else if (comboState == ComboState.Finished)
         {
             if (GetCurrentChain().useDelay)
             {
@@ -259,7 +279,7 @@ public class ComboModule : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (comboState != (ComboState)4)
+        if (comboState != ComboState.Staggering)
         {
             ComboStateMachine();
         }
@@ -274,7 +294,7 @@ public class ComboModule : MonoBehaviour
                 staggerDuration -= Time.deltaTime;
             }
         }
-        Debug.Log(animator.speed);
+        //Debug.Log(animator.speed);
     }
 
     AbilityData GetCurrentChain()
@@ -307,6 +327,7 @@ public class ComboModule : MonoBehaviour
 
     void PlayDefault()
     {
+        ctrlIndex = defaultCombo;
         chainIndex = 0;
         animator.speed = 1f;
         ResetHitEvent();
@@ -317,11 +338,11 @@ public class ComboModule : MonoBehaviour
             string _default = GetCombo(ctrlIndex, i).defaultState;
             animator.Play(_default, _index, 0f);
         }
-        //Debug.Log("default");
-        comboState = (ComboState)0;
+        Debug.Log("default");
+        comboState = ComboState.Idle;
     }
 
-   
+
 
     public bool PlayCombo()
     {
